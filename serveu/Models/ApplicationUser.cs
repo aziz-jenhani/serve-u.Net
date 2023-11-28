@@ -16,6 +16,10 @@ namespace serveu.Models
         [Required]
         public string Name { get; set; }
 
+        public string PhoneNumber { get; set; }
+
+        public List<MenuItemEntities> MenuItems { get; set; }
+
     }
 
     public static class UserRole

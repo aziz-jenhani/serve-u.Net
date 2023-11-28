@@ -195,6 +195,7 @@ namespace serveu.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("PhoneNumber")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<bool>("PhoneNumberConfirmed")
@@ -308,8 +309,9 @@ namespace serveu.Migrations
                     b.Property<int>("image_id")
                         .HasColumnType("integer");
 
-                    b.Property<int>("restaurant_id")
-                        .HasColumnType("integer");
+                    b.Property<string>("restaurant_id")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("MenuItemId");
 
@@ -320,24 +322,6 @@ namespace serveu.Migrations
                     b.HasIndex("restaurant_id");
 
                     b.ToTable("MenuItems");
-                });
-
-            modelBuilder.Entity("serveu.Models.restaurant", b =>
-                {
-                    b.Property<int>("RestaurantId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("RestaurantId"));
-
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("PhoneNumber");
-
-                    b.HasKey("RestaurantId");
-
-                    b.ToTable("Restaurants");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -405,7 +389,7 @@ namespace serveu.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("serveu.Models.restaurant", "Restaurant")
+                    b.HasOne("serveu.Models.ApplicationUser", "Restaurant")
                         .WithMany("MenuItems")
                         .HasForeignKey("restaurant_id")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -418,12 +402,12 @@ namespace serveu.Migrations
                     b.Navigation("Restaurant");
                 });
 
-            modelBuilder.Entity("serveu.Models.MenuCategoryEntities", b =>
+            modelBuilder.Entity("serveu.Models.ApplicationUser", b =>
                 {
                     b.Navigation("MenuItems");
                 });
 
-            modelBuilder.Entity("serveu.Models.restaurant", b =>
+            modelBuilder.Entity("serveu.Models.MenuCategoryEntities", b =>
                 {
                     b.Navigation("MenuItems");
                 });

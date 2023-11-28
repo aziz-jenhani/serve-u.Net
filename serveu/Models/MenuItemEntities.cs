@@ -28,9 +28,9 @@ namespace serveu.Models
         [ForeignKey("category_id")]
         public MenuCategoryEntities Category { get; set; }
 
-        public int restaurant_id { get; set; } // Clé étrangère pour Restaurant
+        public string restaurant_id { get; set; } // Clé étrangère pour Restaurant
         [ForeignKey("restaurant_id")]
-        public restaurant Restaurant { get; set; }
+        public ApplicationUser Restaurant { get; set; }
         public MenuItemEntities()
         {
             CreatedAt = DateTime.UtcNow;

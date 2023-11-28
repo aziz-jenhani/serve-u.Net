@@ -7,43 +7,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace serveu.Migrations
 {
     /// <inheritdoc />
-    public partial class ApplicationUser : Migration
+    public partial class RestaurentRelation : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_MenuItems_MenuCategories_CategoryId",
-                table: "MenuItems");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_MenuItems_Restaurants_RestaurantId",
-                table: "MenuItems");
-
-            migrationBuilder.DropIndex(
-                name: "IX_MenuItems_CategoryId",
-                table: "MenuItems");
-
-            migrationBuilder.DropIndex(
-                name: "IX_MenuItems_RestaurantId",
-                table: "MenuItems");
-
-            migrationBuilder.DropColumn(
-                name: "CategoryId",
-                table: "MenuItems");
-
-            migrationBuilder.DropColumn(
-                name: "RestaurantId",
-                table: "MenuItems");
-
-            migrationBuilder.AlterColumn<double>(
-                name: "price",
-                table: "MenuItems",
-                type: "double precision",
-                nullable: false,
-                oldClrType: typeof(float),
-                oldType: "float");
-
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
@@ -64,6 +32,7 @@ namespace serveu.Migrations
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: false),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
@@ -72,7 +41,6 @@ namespace serveu.Migrations
                     PasswordHash = table.Column<string>(type: "text", nullable: true),
                     SecurityStamp = table.Column<string>(type: "text", nullable: true),
                     ConcurrencyStamp = table.Column<string>(type: "text", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
                     PhoneNumberConfirmed = table.Column<bool>(type: "boolean", nullable: false),
                     TwoFactorEnabled = table.Column<bool>(type: "boolean", nullable: false),
                     LockoutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
@@ -82,6 +50,36 @@ namespace serveu.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FileEntities",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    path = table.Column<string>(type: "text", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FileEntities", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MenuCategories",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    name = table.Column<string>(type: "text", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MenuCategories", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -190,15 +188,42 @@ namespace serveu.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateIndex(
-                name: "IX_MenuItems_category_id",
-                table: "MenuItems",
-                column: "category_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_MenuItems_restaurant_id",
-                table: "MenuItems",
-                column: "restaurant_id");
+            migrationBuilder.CreateTable(
+                name: "MenuItems",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    name = table.Column<string>(type: "text", nullable: false),
+                    price = table.Column<double>(type: "double precision", nullable: false),
+                    image_id = table.Column<int>(type: "integer", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    category_id = table.Column<int>(type: "integer", nullable: false),
+                    restaurant_id = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MenuItems", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_MenuItems_AspNetUsers_restaurant_id",
+                        column: x => x.restaurant_id,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_MenuItems_FileEntities_image_id",
+                        column: x => x.image_id,
+                        principalTable: "FileEntities",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_MenuItems_MenuCategories_category_id",
+                        column: x => x.category_id,
+                        principalTable: "MenuCategories",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -237,34 +262,25 @@ namespace serveu.Migrations
                 column: "NormalizedUserName",
                 unique: true);
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_MenuItems_MenuCategories_category_id",
+            migrationBuilder.CreateIndex(
+                name: "IX_MenuItems_category_id",
                 table: "MenuItems",
-                column: "category_id",
-                principalTable: "MenuCategories",
-                principalColumn: "id",
-                onDelete: ReferentialAction.Cascade);
+                column: "category_id");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_MenuItems_Restaurants_restaurant_id",
+            migrationBuilder.CreateIndex(
+                name: "IX_MenuItems_image_id",
                 table: "MenuItems",
-                column: "restaurant_id",
-                principalTable: "Restaurants",
-                principalColumn: "RestaurantId",
-                onDelete: ReferentialAction.Cascade);
+                column: "image_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MenuItems_restaurant_id",
+                table: "MenuItems",
+                column: "restaurant_id");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_MenuItems_MenuCategories_category_id",
-                table: "MenuItems");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_MenuItems_Restaurants_restaurant_id",
-                table: "MenuItems");
-
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 
@@ -281,66 +297,19 @@ namespace serveu.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "MenuItems");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
 
-            migrationBuilder.DropIndex(
-                name: "IX_MenuItems_category_id",
-                table: "MenuItems");
+            migrationBuilder.DropTable(
+                name: "FileEntities");
 
-            migrationBuilder.DropIndex(
-                name: "IX_MenuItems_restaurant_id",
-                table: "MenuItems");
-
-            migrationBuilder.AlterColumn<float>(
-                name: "price",
-                table: "MenuItems",
-                type: "float",
-                nullable: false,
-                oldClrType: typeof(double),
-                oldType: "double precision");
-
-            migrationBuilder.AddColumn<int>(
-                name: "CategoryId",
-                table: "MenuItems",
-                type: "integer",
-                nullable: false,
-                defaultValue: 0);
-
-            migrationBuilder.AddColumn<int>(
-                name: "RestaurantId",
-                table: "MenuItems",
-                type: "integer",
-                nullable: false,
-                defaultValue: 0);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_MenuItems_CategoryId",
-                table: "MenuItems",
-                column: "CategoryId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_MenuItems_RestaurantId",
-                table: "MenuItems",
-                column: "RestaurantId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_MenuItems_MenuCategories_CategoryId",
-                table: "MenuItems",
-                column: "CategoryId",
-                principalTable: "MenuCategories",
-                principalColumn: "id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_MenuItems_Restaurants_RestaurantId",
-                table: "MenuItems",
-                column: "RestaurantId",
-                principalTable: "Restaurants",
-                principalColumn: "RestaurantId",
-                onDelete: ReferentialAction.Cascade);
+            migrationBuilder.DropTable(
+                name: "MenuCategories");
         }
     }
 }

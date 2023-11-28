@@ -10,13 +10,12 @@ namespace serveu.Context
            : base(options)
         {
         }
-        public DbSet<restaurant> Restaurants { get; set; }
         public DbSet<MenuItemEntities> MenuItems { get; set; }
         public DbSet<MenuCategoryEntities> MenuCategories { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Configuration de la relation entre restaurant et menu_item
-            modelBuilder.Entity<restaurant>()
+            modelBuilder.Entity<ApplicationUser>()
                 .HasMany(r => r.MenuItems)
                 .WithOne(mi => mi.Restaurant)
                 .HasForeignKey(mi => mi.restaurant_id)
