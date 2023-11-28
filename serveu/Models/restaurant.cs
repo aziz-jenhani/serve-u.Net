@@ -5,6 +5,9 @@ namespace serveu.Models
 {
     public class restaurant
     {
+
+
+
         [Key]
         public int RestaurantId { get; set; } // Ajoutez une clé primaire
         [Column("PhoneNumber")]

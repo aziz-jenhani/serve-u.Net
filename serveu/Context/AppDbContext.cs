@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using serveu.Models;
 
 namespace serveu.Context
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext : IdentityDbContext<ApplicationUser>
     {
         public AppDbContext(DbContextOptions<AppDbContext> options)
            : base(options)
@@ -20,7 +21,7 @@ namespace serveu.Context
                 .WithOne(mi => mi.Restaurant)
                 .HasForeignKey(mi => mi.restaurant_id)
                 .OnDelete(DeleteBehavior.Cascade);
-            
+
 
             // Configuration de la relation entre menu_category et menu_item
             modelBuilder.Entity<MenuCategoryEntities>()
