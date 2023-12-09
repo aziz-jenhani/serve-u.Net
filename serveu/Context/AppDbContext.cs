@@ -10,13 +10,23 @@ namespace serveu.Context
            : base(options)
         {
         }
+
+        public DbSet<Table> Tables { get; set; }
+
         public DbSet<MenuItemEntities> MenuItems { get; set; }
         public DbSet<MenuCategoryEntities> MenuCategories { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
             // Configuration de la relation entre restaurant et menu_item
             modelBuilder.Entity<ApplicationUser>()
                 .HasMany(r => r.MenuItems)
+                .WithOne(mi => mi.Restaurant)
+                .HasForeignKey(mi => mi.restaurant_id)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ApplicationUser>()
+                .HasMany(r => r.Tables)
                 .WithOne(mi => mi.Restaurant)
                 .HasForeignKey(mi => mi.restaurant_id)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -42,6 +52,12 @@ namespace serveu.Context
                 .WithMany(r => r.MenuItems)
                 .HasForeignKey(mi => mi.restaurant_id) // Utilisez la clé étrangère RestaurantId
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Table>()
+        .HasOne(mi => mi.Restaurant)
+        .WithMany(r => r.Tables)
+        .HasForeignKey(mi => mi.restaurant_id) // Utilisez la clé étrangère RestaurantId
+        .OnDelete(DeleteBehavior.Cascade);
 
 
             base.OnModelCreating(modelBuilder);

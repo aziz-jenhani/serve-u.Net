@@ -12,12 +12,12 @@ using serveu.Dtos;
 using serveu.Interceptor;
 using serveu.Models;
 
+
 namespace serveu.Controllers
 {
     [Route("api/web/menu-categories/")]
     [ApiController]
     [ServiceFilter(typeof(ApiResponseFormatFilter))]
-
     public class MenuCategoryEntitiesController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -71,7 +71,7 @@ namespace serveu.Controllers
         }
         // GET: api/MenuCategoryEntities/5
         [HttpGet("{id}")]
-        
+
         public async Task<ActionResult<MenuCategoryDTO>> GetMenuCategoryEntities(int id)
         {
             if (_context.MenuCategories == null)
@@ -200,7 +200,7 @@ namespace serveu.Controllers
             {
                 return NotFound();
             }
-            var deleteResponseDTO =new MenuCategoryDTO
+            var deleteResponseDTO = new MenuCategoryDTO
             {
                 CreatedAt = menuCategoryEntities.CreatedAt,
                 UpdatedAt = menuCategoryEntities.UpdatedAt,

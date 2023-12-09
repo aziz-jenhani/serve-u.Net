@@ -15,11 +15,10 @@ using ServeU.Utils;
 
 namespace serveu.Controllers;
 
-[Route("/api/web/auth")]
+[Route("/api/back-office/auth")]
 [ApiController()]
 [ServiceFilter(typeof(ApiResponseFormatFilter))]
-
-public class AuthController : ControllerBase
+public class BackOfficeAuthController : ControllerBase
 {
 
 
@@ -30,7 +29,7 @@ public class AuthController : ControllerBase
 
     private readonly IMapper mapper;
     private readonly AuthUtils authUtils;
-    public AuthController(AppDbContext _appDbContext, UserManager<ApplicationUser> _userManager, IConfiguration _configuration, RoleManager<IdentityRole> _roleManager, IMapper _mapper, AuthUtils _authUtils)
+    public BackOfficeAuthController(AppDbContext _appDbContext, UserManager<ApplicationUser> _userManager, IConfiguration _configuration, RoleManager<IdentityRole> _roleManager, IMapper _mapper, AuthUtils _authUtils)
     {
         appDbContext = _appDbContext;
         userManager = _userManager;
@@ -72,18 +71,18 @@ public class AuthController : ControllerBase
             UserName = signUpDto.Email,
             Name = signUpDto.Name,
             PhoneNumber = signUpDto.PhoneNumber,
-            Role = UserRole.RESTAURANT
+            Role = UserRole.ADMIN
         }, signUpDto.Password);
 
         if (useIdentity.Succeeded)
         {
-            if (!await roleManager.RoleExistsAsync(UserRole.RESTAURANT))
+            if (!await roleManager.RoleExistsAsync(UserRole.ADMIN))
             {
-                await roleManager.CreateAsync(new IdentityRole(UserRole.RESTAURANT));
+                await roleManager.CreateAsync(new IdentityRole(UserRole.ADMIN));
             }
 
             var createdUser = await userManager.FindByEmailAsync(signUpDto.Email);
-            await userManager.AddToRoleAsync(createdUser, UserRole.RESTAURANT);
+            await userManager.AddToRoleAsync(createdUser, UserRole.ADMIN);
             var userRoles = await userManager.GetRolesAsync(createdUser);
             var authClaims = new List<Claim>
             {
@@ -104,6 +103,7 @@ public class AuthController : ControllerBase
                 {
                     Email = createdUser.Email,
                     Name = createdUser.Name,
+                    Role = UserRole.ADMIN,
                     IsVerified = false,
                 },
                 AccessToken = token
@@ -127,13 +127,6 @@ public class AuthController : ControllerBase
             return Unauthorized("Invalid password or email");
 
         }
-
-        if (!foundUser.EmailConfirmed)
-        {
-            return Unauthorized("User is not verified yet");
-
-        }
-
         var userRoles = await userManager.GetRolesAsync(foundUser);
         var authClaims = new List<Claim>
             {

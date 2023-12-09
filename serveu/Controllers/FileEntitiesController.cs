@@ -6,12 +6,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using serveu.Context;
+using serveu.Interceptor;
 using serveu.Models;
 
 namespace serveu.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/web/files")]
     [ApiController]
+    [ServiceFilter(typeof(ApiResponseFormatFilter))]
     public class FileEntitiesController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -22,11 +24,10 @@ namespace serveu.Controllers
             _environment = environment;
         }
 
-        
+
         // POST: api/FileEntities
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        [HttpPost]
+        [HttpPost("upload/image")]
         public async Task<ActionResult<object>> UploadImage(IFormFile file)
         {
             if (file == null || file.Length <= 0)
@@ -91,11 +92,11 @@ namespace serveu.Controllers
                 return StatusCode(500, $"Une erreur s'est produite lors de l'upload du fichier : {ex.Message}");
             }
         }
-    
 
 
 
-    private bool FileEntitiesExists(int id)
+
+        private bool FileEntitiesExists(int id)
         {
             return (_context.FileEntities?.Any(e => e.Id == id)).GetValueOrDefault();
         }

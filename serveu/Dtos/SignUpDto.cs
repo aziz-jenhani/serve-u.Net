@@ -20,7 +20,9 @@ public class SignUpDto
     public string Password { get; set; }
 
 
-    [Required]
-    [ValidValuesAttribute(UserRole.ADMIN, UserRole.RESTAURANT)]
-    public string role { get; set; }
+    [Required(ErrorMessage = "Phone number is required")]
+    [MaxLength(64)]
+    [MinLength(8)]
+    public string PhoneNumber { get; set; }
+
 }

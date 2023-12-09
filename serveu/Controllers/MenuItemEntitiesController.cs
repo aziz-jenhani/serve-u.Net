@@ -1,30 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿
+using System.Security.Claims;
 using AutoMapper;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NuGet.Protocol;
 using serveu.Context;
 using serveu.Dtos;
 using serveu.Interceptor;
 using serveu.Models;
+using ServeU.Utils;
 
 namespace serveu.Controllers
 {
     [Route("api/web/menu-items/")]
+    [Authorize(Roles = UserRole.RESTAURANT)]
     [ApiController]
     [ServiceFilter(typeof(ApiResponseFormatFilter))]
     public class MenuItemEntitiesController : ControllerBase
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
-        public MenuItemEntitiesController(AppDbContext context, IMapper mapper)
+
+        private readonly AuthUtils _authUtils;
+        public MenuItemEntitiesController(AppDbContext context, IMapper mapper, AuthUtils authUtils)
         {
             _context = context;
             _mapper = mapper;
-
+            _authUtils = authUtils;
         }
 
         // GET: api/MenuItemEntities
@@ -33,6 +37,9 @@ namespace serveu.Controllers
      [FromQuery] int page = 1,
      [FromQuery] int limit = 10)
         {
+            var currentUser = await this._authUtils.getAuthenticatedUserAsync(HttpContext.User);
+
+
             if (_context.MenuItems == null)
             {
                 return NotFound();
@@ -40,6 +47,7 @@ namespace serveu.Controllers
 
             // Effectuez la pagination en utilisant Skip et Take
             var query = _context.MenuItems
+                .Where(menuItem => menuItem.restaurant_id == currentUser.Id)
                 .Include(mi => mi.Category)
                 .Include(mi => mi.Image)
                 .Skip((page - 1) * limit)
@@ -74,7 +82,10 @@ namespace serveu.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<DetailedMenuItemResponseDTO>> GetMenuItemEntities(int id)
         {
+
+            var currentUser = await this._authUtils.getAuthenticatedUserAsync(HttpContext.User);
             var menuItemEntities = await _context.MenuItems
+                .Where(menuItem => menuItem.restaurant_id == currentUser.Id)
                 .Include(mi => mi.Image)
                 .Include(mi => mi.Category)
                 .FirstOrDefaultAsync(mi => mi.MenuItemId == id);
@@ -95,15 +106,17 @@ namespace serveu.Controllers
                 Category = _mapper.Map<MenuCategoryDTO>(menuItemEntities.Category)
             };
 
-            return Ok( detailedMenuItemDTO);
+            return Ok(detailedMenuItemDTO);
         }
 
         // PUT: api/MenuItemEntities/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         // PUT: api/MenuItemEntities/{id}
         [HttpPut]
-        public async Task<IActionResult> PutMenuItemEntities( UpdateMenuItemDTO updateMenuItemDTO)
+        public async Task<IActionResult> PutMenuItemEntities(UpdateMenuItemDTO updateMenuItemDTO)
         {
+
+            var currentUser = await this._authUtils.getAuthenticatedUserAsync(HttpContext.User);
             if (updateMenuItemDTO == null || string.IsNullOrEmpty(updateMenuItemDTO.Id))
             {
                 return BadRequest();
@@ -113,7 +126,8 @@ namespace serveu.Controllers
                 return BadRequest("Invalid ID format");
             }
 
-            var existingMenuItem = await _context.MenuItems.FindAsync(menuId);
+            var existingMenuItem = await _context.MenuItems
+                  .Where(menuItem => menuItem.MenuItemId == menuId && menuItem.restaurant_id == currentUser.Id).FirstAsync();
 
             if (existingMenuItem == null)
             {
@@ -163,6 +177,9 @@ namespace serveu.Controllers
         [HttpPost]
         public async Task<ActionResult> PostMenuItemEntities(CreateMenuItemDTO createMenuItemDTO)
         {
+
+            var currentUser = await this._authUtils.getAuthenticatedUserAsync(HttpContext.User);
+
             if (_context.MenuItems == null)
             {
                 return Problem("Entity set 'AppDbContext.MenuItems' is null.");
@@ -173,9 +190,10 @@ namespace serveu.Controllers
             {
                 Name = createMenuItemDTO.Name,
                 Price = createMenuItemDTO.Price,
-                image_id = int.Parse(createMenuItemDTO.ImageId),
-                category_id = int.Parse(createMenuItemDTO.CategoryId),
-               
+                image_id = createMenuItemDTO.ImageId,
+                category_id = createMenuItemDTO.CategoryId,
+                restaurant_id = currentUser.Id
+
                 // Assurez-vous d'ajuster ces propriétés en fonction de votre modèle réel
             };
 
@@ -184,16 +202,16 @@ namespace serveu.Controllers
 
             var response = new
             {
-                
-                    restaurant = new { id = menuItemEntities.restaurant_id }, // Assurez-vous d'ajuster en fonction de votre modèle
-                    category = new { id = menuItemEntities.category_id }, // Assurez-vous d'ajuster en fonction de votre modèle
-                    image = new { id = menuItemEntities.image_id }, // Assurez-vous d'ajuster en fonction de votre modèle
-                    menuItemEntities.Name,
-                    menuItemEntities.Price,
-                    menuItemEntities.CreatedAt,
-                    menuItemEntities.UpdatedAt,
-                    menuItemEntities.MenuItemId
-                
+
+                restaurant = new { id = menuItemEntities.restaurant_id }, // Assurez-vous d'ajuster en fonction de votre modèle
+                category = new { id = menuItemEntities.category_id }, // Assurez-vous d'ajuster en fonction de votre modèle
+                image = new { id = menuItemEntities.image_id }, // Assurez-vous d'ajuster en fonction de votre modèle
+                menuItemEntities.Name,
+                menuItemEntities.Price,
+                menuItemEntities.CreatedAt,
+                menuItemEntities.UpdatedAt,
+                menuItemEntities.MenuItemId
+
             };
 
             return Ok(response);
@@ -206,7 +224,9 @@ namespace serveu.Controllers
             {
                 return NotFound();
             }
+            var currentUser = await _authUtils.getAuthenticatedUserAsync(HttpContext.User);
             var menuItemEntities = await _context.MenuItems
+                            .Where(menuItem => menuItem.restaurant_id == currentUser.Id)
                            .Include(mi => mi.Image)
                            .Include(mi => mi.Category)
                            .FirstOrDefaultAsync(mi => mi.MenuItemId == id);

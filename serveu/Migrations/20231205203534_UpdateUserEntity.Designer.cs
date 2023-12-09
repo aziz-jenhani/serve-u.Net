@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using serveu.Context;
@@ -11,9 +12,11 @@ using serveu.Context;
 namespace serveu.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231205203534_UpdateUserEntity")]
+    partial class UpdateUserEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -328,33 +331,6 @@ namespace serveu.Migrations
                     b.ToTable("MenuItems");
                 });
 
-            modelBuilder.Entity("serveu.Models.Table", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("restaurant_id")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("restaurant_id");
-
-                    b.ToTable("Tables");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -433,22 +409,9 @@ namespace serveu.Migrations
                     b.Navigation("Restaurant");
                 });
 
-            modelBuilder.Entity("serveu.Models.Table", b =>
-                {
-                    b.HasOne("serveu.Models.ApplicationUser", "Restaurant")
-                        .WithMany("Tables")
-                        .HasForeignKey("restaurant_id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Restaurant");
-                });
-
             modelBuilder.Entity("serveu.Models.ApplicationUser", b =>
                 {
                     b.Navigation("MenuItems");
-
-                    b.Navigation("Tables");
                 });
 
             modelBuilder.Entity("serveu.Models.MenuCategoryEntities", b =>

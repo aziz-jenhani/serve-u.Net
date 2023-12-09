@@ -2,6 +2,6 @@ using serveu.Dtos;
 
 public class LoginResponseDto
 {
-    public ApplicationUserDto user { get; set; }
-    public string authToken { get; set; }
+    public ApplicationUserDto User { get; set; }
+    public string AccessToken { get; set; }
 }
